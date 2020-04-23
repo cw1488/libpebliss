@@ -555,7 +555,7 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 		current_pos_for_descriptors += sizeof(descr);
 
 		//Save library name
-		std::string lib_name{ pe.section_data_from_rva(it->get_name_rva(), section_data_virtual, true) }
+		std::string lib_name{ pe.section_data_from_rva(it->get_name_rva(), section_data_virtual, true) };
 
 		memcpy(&raw_data[current_string_pointer], lib_name.c_str(), lib_name.length() + 1 /* nullbyte */);
 		current_string_pointer += static_cast<uint32_t>(lib_name.length() + 1 /* nullbyte */);
