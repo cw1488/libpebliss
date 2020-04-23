@@ -387,7 +387,7 @@ const imported_functions_list get_imported_functions_base(const pe_base& pe)
 					//Get imported function name
 					const char* func_name = pe.section_data_from_rva(static_cast<uint32_t>(lookup + sizeof(uint16_t)), section_data_virtual, true);
 					
-					func.set_name_rva(static_cast<uint32_t>(lookup + sizeof(uint16_t));
+					func.set_name_rva(static_cast<uint32_t>(lookup + sizeof(uint16_t)));
 
 					//Check for null-termination
 					if(!pe_utils::is_null_terminated(func_name, max_name_length))
