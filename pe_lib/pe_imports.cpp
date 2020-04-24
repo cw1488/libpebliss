@@ -141,11 +141,6 @@ bool imported_function::has_name() const
 	return !name_.empty();
 }
 
-uint32_t imported_function::get_name_rva() const
-{
-	return name_rva_;
-}
-
 //Returns hint
 uint16_t imported_function::get_hint() const
 {
@@ -170,11 +165,6 @@ void imported_function::set_name(const std::string& name)
 	name_ = name;
 }
 
-void imported_function::set_name_rva(uint32_t name_rva)
-{
-	name_rva_ = name_rva;
-}
-
 //Sets hint
 void imported_function::set_hint(uint16_t hint)
 {
@@ -197,11 +187,6 @@ void imported_function::set_iat_va(uint64_t va)
 import_library::import_library()
 	:rva_to_iat_(0), rva_to_original_iat_(0), timestamp_(0)
 {}
-
-uint32_t import_library::get_name_rva() const
-{
-	return name_rva_;
-}
 
 //Returns name of library
 const std::string& import_library::get_name() const
@@ -231,10 +216,6 @@ uint32_t import_library::get_timestamp() const
 void import_library::set_name(const std::string& name)
 {
 	name_ = name;
-}
-
-void import_library::set_name_rva(uint32_t name_rva) {
-	name_rva_ = name_rva;
 }
 
 //Sets RVA to Import Address Table (IAT)
@@ -323,7 +304,6 @@ const imported_functions_list get_imported_functions_base(const pe_base& pe)
 
 		//Set library name
 		lib.set_name(dll_name);
-		lib.set_name_rva(import_descriptor.Name);
 		//Set library timestamp
 		lib.set_timestamp(import_descriptor.TimeDateStamp);
 		//Set library RVA to IAT and original IAT
@@ -386,8 +366,6 @@ const imported_functions_list get_imported_functions_base(const pe_base& pe)
 
 					//Get imported function name
 					const char* func_name = pe.section_data_from_rva(static_cast<uint32_t>(lookup + sizeof(uint16_t)), section_data_virtual, true);
-					
-					func.set_name_rva(static_cast<uint32_t>(lookup + sizeof(uint16_t)));
 
 					//Check for null-termination
 					if(!pe_utils::is_null_terminated(func_name, max_name_length))
@@ -447,9 +425,7 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 	//Enumerate imported functions
 	for(imported_functions_list::const_iterator it = imports.begin(); it != imports.end(); ++it)
 	{
-		std::string lib_name{ pe.section_data_from_rva(it->get_name_rva(), section_data_virtual, true) };
-
-		needed_size_for_strings += static_cast<uint32_t>(lib_name.length() + 1 /* nullbyte */);
+		needed_size_for_strings += static_cast<uint32_t>((*it).get_name().length() + 1 /* nullbyte */);
 
 		const import_library::imported_list& funcs = (*it).get_imported_functions();
 
@@ -459,10 +435,9 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 		//Enumerate all imported functions in library
 		for(import_library::imported_list::const_iterator f = funcs.begin(); f != funcs.end(); ++f)
 		{
-			std::string func_name{ pe.section_data_from_rva(f->get_name_rva(), section_data_virtual, true) };
 
 			if((*f).has_name())
-				needed_size_for_strings += static_cast<uint32_t>(func_name.length() + 1 /* nullbyte */ + sizeof(uint16_t) /* hint */);
+				needed_size_for_strings += static_cast<uint32_t>((*f).get_name().length() + 1 /* nullbyte */ + sizeof(uint16_t) /* hint */);
 		}
 	}
 
@@ -555,10 +530,8 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 		current_pos_for_descriptors += sizeof(descr);
 
 		//Save library name
-		std::string lib_name{ pe.section_data_from_rva(it->get_name_rva(), section_data_virtual, true) };
-
-		memcpy(&raw_data[current_string_pointer], lib_name.c_str(), lib_name.length() + 1 /* nullbyte */);
-		current_string_pointer += static_cast<uint32_t>(lib_name.length() + 1 /* nullbyte */);
+		memcpy(&raw_data[current_string_pointer], (*it).get_name().c_str(), (*it).get_name().length() + 1 /* nullbyte */);
+		current_string_pointer += static_cast<uint32_t>((*it).get_name().length() + 1 /* nullbyte */);
 		
 		//List all imported functions
 		const import_library::imported_list& funcs = (*it).get_imported_functions();
@@ -633,12 +606,11 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 
 				//Write IMAGE_IMPORT_BY_NAME (WORD hint + string function name)
 
-				std::string func_name{ pe.section_data_from_rva(f->get_name_rva(), section_data_virtual, true) };
 
 				uint16_t hint = (*f).get_hint();
 				memcpy(&raw_data[current_string_pointer], &hint, sizeof(hint));
-				memcpy(&raw_data[current_string_pointer + sizeof(uint16_t)], func_name.c_str(), func_name.length() + 1 /* nullbyte */);
-				current_string_pointer += static_cast<uint32_t>(func_name.length() + 1 /* nullbyte */ + sizeof(uint16_t) /* hint */);
+				memcpy(&raw_data[current_string_pointer + sizeof(uint16_t)], (*f).get_name().c_str(), (*f).get_name().length() + 1 /* nullbyte */);
+				current_string_pointer += static_cast<uint32_t>((*f).get_name().length() + 1 /* nullbyte */ + sizeof(uint16_t) /* hint */);
 			}
 			else //Function is imported by ordinal
 			{

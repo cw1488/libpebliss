@@ -17,7 +17,6 @@ public:
 	//Returns true if imported function has name (and hint)
 	bool has_name() const;
 
-	uint32_t get_name_rva() const;
 	//Returns name of function
 	const std::string& get_name() const;
 	//Returns hint
@@ -32,7 +31,6 @@ public: //Setters do not change everything inside image, they are used by PE cla
 	//You also can use them to rebuild image imports
 	//Sets name of function
 	void set_name(const std::string& name);
-	void set_name_rva(uint32_t name_rva);
 	//Sets hint
 	void set_hint(uint16_t hint);
 	//Sets ordinal
@@ -43,7 +41,6 @@ public: //Setters do not change everything inside image, they are used by PE cla
 
 private:
 	std::string name_; //Function name
-	uint32_t name_rva_;
 	uint16_t hint_; //Hint
 	uint16_t ordinal_; //Ordinal
 	uint64_t iat_va_;
@@ -59,7 +56,6 @@ public:
 	//Default constructor
 	import_library();
 
-	uint32_t get_name_rva() const;
 	//Returns name of library
 	const std::string& get_name() const;
 	//Returns RVA to Import Address Table (IAT)
@@ -76,7 +72,6 @@ public: //Setters do not change everything inside image, they are used by PE cla
 	//You also can use them to rebuild image imports
 	//Sets name of library
 	void set_name(const std::string& name);
-	void set_name_rva(uint32_t name_rva);
 	//Sets RVA to Import Address Table (IAT)
 	void set_rva_to_iat(uint32_t rva_to_iat);
 	//Sets RVA to Original Import Address Table (Original IAT)
@@ -91,7 +86,6 @@ public: //Setters do not change everything inside image, they are used by PE cla
 
 private:
 	std::string name_; //Library name
-	uint32_t name_rva_;
 	uint32_t rva_to_iat_; //RVA to IAT
 	uint32_t rva_to_original_iat_; //RVA to original IAT
 	uint32_t timestamp_; //DLL TimeStamp
