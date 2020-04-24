@@ -503,7 +503,7 @@ const image_directory rebuild_imports_base(pe_base& pe, const imported_functions
 		image_import_descriptor descr;
 		memset(&descr, 0, sizeof(descr));
 		descr.TimeDateStamp = (*it).get_timestamp(); //Restore timestamp
-		descr.Name = it->get_name_rva(); //Library name RVA
+		descr.Name = pe.rva_from_section_offset(import_section, current_string_pointer); //Library name RVA
 
 		//If we should save IAT for current import descriptor
 		bool save_iats_for_this_descriptor = import_settings.save_iat_and_original_iat_rvas() && (*it).get_rva_to_iat() != 0;
